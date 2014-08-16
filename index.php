@@ -47,31 +47,44 @@ use Facebook\GraphSessionInfo;
 FacebookSession::setDefaultApplication('APP-ID','APP_SECRET');
 
 $helper = new FacebookCanvasLoginHelper();
-
 try {
 	$session = $helper->getSession();
-} catch (FacebookRequestException $e) {
-	echo $e->getMessage();
+} catch (FacebookRequestException $ex) {
+	echo $ex->getMessage();
 } catch (\Exception $ex) {
-    echo $e->getMessage();
+echo $ex->getMessage();
 }
-
 if ($session) {
 	try {
+		// $request = new FacebookRequest($session, 'GET', '/me');
+		// $response = $request->execute();
+		// $me = $response->getGraphObject();
+		// echo $me->getProperty('name');
+		
+		// $postRequest = new FacebookRequest($session, 'POST', '/me/feed', array('link' => 'http://codenmind.com', 'description' => 'new description', 'message' => 'My first post using my facebook app.'));
+		// $postResponse = $postRequest->execute();
+		// $posting = $postResponse->getGraphObject();
+		// echo $posting->getProperty('id');
+		
+		// uploading image to user timeline using facebook php sdk v4
 
-		$request = new FacebookRequest($session, 'GET', '/me');
-		$response = $request->execute();
-		$me = $response->getGraphObject();
-		echo $me->getProperty('name');
-		echo "<br>";
-		echo $me->getProperty('gender');
+		$response = (new FacebookRequest(
+			$session, 'POST', '/me/photos', array(
+				'source' => new CURLFile('picture.jpg', 'image/jpg'),
+				'message' => 'User provided message'
+				)
+			)
+		)->execute()->getGraphObject();
 
+		if($response) {
+			echo "Done";
+		}
 
-  	} catch(FacebookRequestException $e) {
-  		echo $e->getMessage();
- 	}   
+	} catch(FacebookRequestException $e) {
+		echo $e->getMessage();
+	}
 } else {
-	$helper = new FacebookRedirectLoginHelper('https://apps.facebook.com/APP-NAMESPACE/');
-    $auth_url = $helper->getLoginUrl();
-    echo "<script>window.top.location.href='".$auth_url."'</script>";
+	$helper = new FacebookRedirectLoginHelper('https://apps.facebook.com/codenmind/');
+$auth_url = $helper->getLoginUrl(array('email', 'publish_actions'));
+echo "<script>window.top.location.href='".$auth_url."'</script>";
 }
